@@ -18,19 +18,23 @@ async function signup(parent, args, context, info) {
 }
 
 async function login(parent, args, context, info) {
-  const { password, ...user } = await context.prisma.user({
-    email: args.email,
-  });
-  if (user) {
-    const valid = await bcrypt.compare(args.password, password);
-    if (valid) {
-      const token = jwt.sign({ userId: user.id }, APP_SECRET);
+  try {
+    const { password, ...user } = await context.prisma.user({
+      email: args.email,
+    });
+    if (user) {
+      const valid = await bcrypt.compare(args.password, password);
+      if (valid) {
+        const token = jwt.sign({ userId: user.id }, APP_SECRET);
 
-      return {
-        token,
-        user,
-      };
+        return {
+          token,
+          user,
+        };
+      }
     }
+  } catch (e) {
+    throw new Error("Invalid login credentials");
   }
   throw new Error("Invalid login credentials");
 }
