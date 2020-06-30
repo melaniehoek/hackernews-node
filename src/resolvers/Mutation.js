@@ -5,6 +5,13 @@ const APP_SECRET = process.env.APP_SECRET;
 
 async function signup(parent, args, context, info) {
   const hashedPassword = await bcrypt.hash(args.password, 10);
+  const checkUser = await context.prisma.user({
+    email: args.email,
+  });
+  if (checkUser) {
+    throw new Error("Already an account with this email address");
+  }
+
   const { password, ...user } = await context.prisma.createUser({
     ...args,
     password: hashedPassword,
